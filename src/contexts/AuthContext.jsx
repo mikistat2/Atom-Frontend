@@ -112,11 +112,6 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    const verifyEmailCode = async (email, code) => {
-        const { data } = await api.post('/auth/verify-email', { email, token: code });
-        return data;
-    };
-
     const login = studentLogin;
 
     const logout = () => {
@@ -133,7 +128,6 @@ export const AuthProvider = ({ children }) => {
         instructorLogin,
         register,
         teacherRegister,
-        verifyEmailCode,
         logout,
         isAuthenticated: !!user
     };

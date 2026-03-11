@@ -1,4 +1,3 @@
-import VerifyEmail from './pages/VerifyEmail';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -26,7 +25,6 @@ function App() {
             <Route path="/courses/:courseId" element={<CourseDetails />} />
             <Route path="/login" element={<Auth initialMode="login" />} />
             <Route path="/register" element={<Auth initialMode="register" />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/become-teacher" element={<BecomeTeacher />} />
             <Route path="/learning/:courseId" element={<Learning />} />
 

@@ -43,7 +43,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'login', defaultRole = 'stud
                     throw new Error("Passwords do not match");
                 }
                 const response = await register(formData.name, formData.email, formData.password, role);
-                setSuccess(response?.message || 'Registration successful! Please verify your email then sign in.');
+                setSuccess(response?.message || 'Registration successful! Sign in to continue.');
                 setMode('login');
                 setShowPassword(false);
                 setFormData(modalBlankForm);
@@ -102,10 +102,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'login', defaultRole = 'stud
                     {success && (
                         <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-success text-sm flex items-start gap-2">
                             <CheckCircle className="w-5 h-5 mt-0.5" />
-                            <div>
-                                <p className="font-medium">{success}</p>
-                                <p className="text-xs text-text-secondary mt-1">We sent a verification link to your inbox.</p>
-                            </div>
+                            <p className="font-medium">{success}</p>
                         </div>
                     )}
 

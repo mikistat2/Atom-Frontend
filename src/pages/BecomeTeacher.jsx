@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     User, Mail, Lock, BookOpen, Briefcase, Award,
-    ArrowRight, CheckCircle, Star, GraduationCap, Image as ImageIcon
+    ArrowRight, Star, GraduationCap, Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -20,25 +20,17 @@ const initialTeacherForm = {
 };
 
 const BecomeTeacher = () => {
-    const { teacherRegister, verifyEmailCode } = useAuth();
+    const { teacherRegister } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-
-    const [pendingEmail, setPendingEmail] = useState('');
-    const [isAwaitingOtp, setIsAwaitingOtp] = useState(false);
-    const [otpCode, setOtpCode] = useState('');
-    const [otpError, setOtpError] = useState('');
-    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
     const [formData, setFormData] = useState(initialTeacherForm);
     const [avatarPreview, setAvatarPreview] = useState('');
     const [avatarDataUrl, setAvatarDataUrl] = useState('');
     const prefill = location?.state?.prefill;
-    const fromAuthRedirect = Boolean(location?.state?.fromAuth);
 
     useEffect(() => {
         if (!prefill) return;
@@ -83,10 +75,6 @@ const BecomeTeacher = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setSuccessMessage('');
-        setOtpError('');
-        setIsAwaitingOtp(false);
-        setPendingEmail('');
         setIsLoading(true);
 
         try {
@@ -94,71 +82,27 @@ const BecomeTeacher = () => {
                 throw new Error("Passwords do not match");
             }
 
-            const emailForOtp = formData.email;
             const avatarImage = avatarDataUrl || null;
 
+            const emailForLogin = formData.email;
             await teacherRegister({ ...formData, avatarImage });
-            setSuccessMessage(`We sent a 6-digit verification code to ${emailForOtp}. Enter it below to activate your instructor account.`);
-            setPendingEmail(emailForOtp);
-            setIsAwaitingOtp(true);
-            setOtpCode('');
-            setOtpError('');
-            setFormData((prev) => ({ ...prev, password: '', confirmPassword: '' }));
-            setStep(1);
-        } catch (err) {
-            const status = err?.response?.status;
-            const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-            setError(status ? `${status}: ${serverMsg || err.message}` : err.message || 'Registration failed.');
-            setIsAwaitingOtp(false);
-            setPendingEmail('');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        if (!pendingEmail) return;
-        setOtpError('');
-        setError('');
-        setSuccessMessage('');
-        setIsVerifyingOtp(true);
-
-        try {
-            const emailToUse = pendingEmail;
-            const response = await verifyEmailCode(emailToUse, otpCode.trim());
-            setSuccessMessage(response?.message || 'Email verified successfully. You can now log in as an instructor.');
-            setIsAwaitingOtp(false);
-            setPendingEmail('');
-            setOtpCode('');
             resetForm();
             setStep(1);
+
             navigate('/login?role=teacher', {
                 replace: true,
                 state: {
-                    fromTeacherVerification: true,
-                    email: emailToUse
+                    fromTeacherRegistration: true,
+                    email: emailForLogin
                 }
             });
         } catch (err) {
             const status = err?.response?.status;
             const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-            setOtpError(status ? `${status}: ${serverMsg || err.message}` : err.message || 'Verification failed.');
+            setError(status ? `${status}: ${serverMsg || err.message}` : err.message || 'Registration failed.');
         } finally {
-            setIsVerifyingOtp(false);
+            setIsLoading(false);
         }
-    };
-
-    const handleStartOver = () => {
-        setIsAwaitingOtp(false);
-        setPendingEmail('');
-        setOtpCode('');
-        setOtpError('');
-        setSuccessMessage('');
-        setError('');
-        setStep(1);
-        setIsVerifyingOtp(false);
-        clearAvatarSelection();
     };
 
     return (
@@ -231,256 +175,207 @@ const BecomeTeacher = () => {
             <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center p-8 bg-background/50 backdrop-blur-md lg:bg-transparent lg:backdrop-blur-none order-1 lg:order-2">
                 <div className="max-w-md w-full glass-strong p-8 rounded-3xl border border-white/10 shadow-2xl animate-fade-in-up">
                     <div className="mb-8">
-                        {isAwaitingOtp ? (
-                            <>
-                                <h2 className="text-2xl font-bold text-white mb-2">Verify your instructor email</h2>
-                                <p className="text-text-secondary">
-                                    Enter the 6-digit code we sent to <span className="text-white font-semibold">{pendingEmail || 'your inbox'}</span>.
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <h2 className="text-2xl font-bold text-white mb-2">Apply as Instructor</h2>
-                                <p className="text-text-secondary">Step {step} of 2: {step === 1 ? 'Personal Details' : 'Professional Profile'}</p>
-                                <div className="w-full h-1 bg-white/10 mt-4 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
-                                        style={{ width: step === 1 ? '50%' : '100%' }}
-                                    ></div>
-                                </div>
-                            </>
-                        )}
+                        <h2 className="text-2xl font-bold text-white mb-2">Apply as Instructor</h2>
+                        <p className="text-text-secondary">Step {step} of 2: {step === 1 ? 'Personal Details' : 'Professional Profile'}</p>
+                        <div className="w-full h-1 bg-white/10 mt-4 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
+                                style={{ width: step === 1 ? '50%' : '100%' }}
+                            ></div>
+                        </div>
                     </div>
 
-                    {successMessage && (
-                        <div className="p-3 rounded-lg bg-success/10 text-success text-sm mb-4 flex items-start gap-2">
-                            <CheckCircle className="w-4 h-4 mt-0.5" />
-                            <span>{successMessage}</span>
-                        </div>
-                    )}
-
-                    {!isAwaitingOtp && error && (
+                    {error && (
                         <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">
                             {error}
                         </div>
                     )}
-
-                    {isAwaitingOtp && otpError && (
-                        <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">
-                            {otpError}
-                        </div>
-                    )}
-
-                    
-
-                    {isAwaitingOtp ? (
-                        <form onSubmit={handleVerifyOtp} className="space-y-5">
-                            <div>
-                                <label className="text-sm font-medium text-text-secondary block mb-2">Verification Code</label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    maxLength={6}
-                                    autoFocus
-                                    className="input w-full text-center tracking-[0.6em] text-xl font-semibold"
-                                    placeholder="123456"
-                                    value={otpCode}
-                                    onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={isVerifyingOtp || otpCode.trim().length < 6}
-                                className="btn btn-primary w-full flex items-center justify-center gap-2"
-                            >
-                                {isVerifyingOtp ? 'Verifying...' : 'Verify Email'}
-                                {!isVerifyingOtp && <ArrowRight className="w-4 h-4" />}
-                            </button>
-                            <p className="text-sm text-text-secondary text-center">
-                                Didn't get the code? Check your spam folder or{' '}
-                                <button type="button" className="text-primary hover:text-white font-semibold" onClick={handleStartOver}>
-                                    update your email
-                                </button>
-                                .
-                            </p>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {step === 1 ? (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Full Name</label>
-                                        <div className="relative">
-                                            <User className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="text"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="Dr. Sarah Johnson"
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Email Address</label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="email"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="sarah@university.edu"
-                                                value={formData.email}
-                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Profile Photo <span className="text-text-secondary">(Optional)</span></label>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden">
-                                                {avatarPreview ? (
-                                                    <img src={avatarPreview} alt="Selected avatar" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <ImageIcon className="w-6 h-6 text-text-secondary" />
-                                                )}
-                                            </div>
-                                            <div className="flex-1 space-y-2">
-                                                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-white/20 text-sm font-semibold text-white/80 cursor-pointer hover:border-primary/60">
-                                                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                                                    Upload Photo
-                                                </label>
-                                                <p className="text-xs text-text-secondary">PNG or JPG up to 5MB.</p>
-                                                {avatarPreview && (
-                                                    <button type="button" className="text-xs text-error hover:text-error/80" onClick={clearAvatarSelection}>
-                                                        Remove photo
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-
-
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">CBE Account Number</label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="password"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="1000535350942"
-                                                value={formData.accountNumber}
-                                                onChange={e => setFormData({ ...formData, accountNumber: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-
-
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Password</label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="password"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="••••••••"
-                                                value={formData.password}
-                                                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Confirm Password</label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="password"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="••••••••"
-                                                value={formData.confirmPassword}
-                                                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep(2)}
-                                        className="btn btn-primary w-full mt-4"
-                                    >
-                                        Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="space-y-4 animate-fade-in">
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Area of Expertise</label>
-                                        <div className="relative">
-                                            <BookOpen className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <input
-                                                type="text"
-                                                required
-                                                className="input pl-12 w-full"
-                                                placeholder="e.g. Web Development, Data Science"
-                                                value={formData.expertise}
-                                                onChange={e => setFormData({ ...formData, expertise: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Years of Experience</label>
-                                        <div className="relative">
-                                            <Briefcase className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
-                                            <select
-                                                className="input pl-12 w-full appearance-none bg-surface"
-                                                value={formData.experience}
-                                                onChange={e => setFormData({ ...formData, experience: e.target.value })}
-                                            >
-                                                <option value="">Select experience</option>
-                                                <option value="0-2">0-2 years</option>
-                                                <option value="3-5">3-5 years</option>
-                                                <option value="5-10">5-10 years</option>
-                                                <option value="10+">10+ years</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-text-secondary block mb-1">Brief Bio</label>
-                                        <textarea
-                                            className="input w-full min-h-[100px] py-3"
-                                            placeholder="Tell us a bit about yourself and what you plan to teach..."
-                                            value={formData.bio}
-                                            onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {step === 1 ? (
+                            <div className="space-y-4 animate-fade-in">
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Full Name</label>
+                                    <div className="relative">
+                                        <User className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="Dr. Sarah Johnson"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         />
                                     </div>
-                                    <div className="flex space-x-3 mt-6">
-                                        <button
-                                            type="button"
-                                            onClick={() => setStep(1)}
-                                            className="btn btn-secondary flex-1"
-                                        >
-                                            Back
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isLoading}
-                                            className="btn btn-primary flex-1"
-                                        >
-                                            {isLoading ? 'Processing...' : 'Submit Application'}
-                                        </button>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Email Address</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="email"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="sarah@university.edu"
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        />
                                     </div>
                                 </div>
-                            )}
-                        </form>
-                    )}
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Profile Photo <span className="text-text-secondary">(Optional)</span></label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden">
+                                            {avatarPreview ? (
+                                                <img src={avatarPreview} alt="Selected avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <ImageIcon className="w-6 h-6 text-text-secondary" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-white/20 text-sm font-semibold text-white/80 cursor-pointer hover:border-primary/60">
+                                                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                                                Upload Photo
+                                            </label>
+                                            <p className="text-xs text-text-secondary">PNG or JPG up to 5MB.</p>
+                                            {avatarPreview && (
+                                                <button type="button" className="text-xs text-error hover:text-error/80" onClick={clearAvatarSelection}>
+                                                    Remove photo
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">CBE Account Number</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="password"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="1000535350942"
+                                            value={formData.accountNumber}
+                                            onChange={e => setFormData({ ...formData, accountNumber: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Password</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="password"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="••••••••"
+                                            value={formData.password}
+                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Confirm Password</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="password"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="••••••••"
+                                            value={formData.confirmPassword}
+                                            onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setStep(2)}
+                                    className="btn btn-primary w-full mt-4"
+                                >
+                                    Next Step <ArrowRight className="w-4 h-4 ml-2" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 animate-fade-in">
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Area of Expertise</label>
+                                    <div className="relative">
+                                        <BookOpen className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <input
+                                            type="text"
+                                            required
+                                            className="input pl-12 w-full"
+                                            placeholder="e.g. Web Development, Data Science"
+                                            value={formData.expertise}
+                                            onChange={e => setFormData({ ...formData, expertise: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Years of Experience</label>
+                                    <div className="relative">
+                                        <Briefcase className="absolute left-4 top-3 w-5 h-5 text-text-secondary" />
+                                        <select
+                                            className="input pl-12 w-full appearance-none bg-surface"
+                                            value={formData.experience}
+                                            onChange={e => setFormData({ ...formData, experience: e.target.value })}
+                                        >
+                                            <option value="">Select experience</option>
+                                            <option value="0-2">0-2 years</option>
+                                            <option value="3-5">3-5 years</option>
+                                            <option value="5-10">5-10 years</option>
+                                            <option value="10+">10+ years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Brief Bio</label>
+                                    <textarea
+                                        className="input w-full min-h-[100px] py-3"
+                                        placeholder="Tell us a bit about yourself and what you plan to teach..."
+                                        value={formData.bio}
+                                        onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Preferred Pronouns <span className="text-text-secondary">(Optional)</span></label>
+                                    <input
+                                        className="input w-full"
+                                        placeholder="She/Her, He/Him, They/Them, etc."
+                                        value={formData.pronouns}
+                                        onChange={e => setFormData({ ...formData, pronouns: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-text-secondary block mb-1">Professional Title <span className="text-text-secondary">(Optional)</span></label>
+                                    <input
+                                        className="input w-full"
+                                        placeholder="Senior Engineer, Professor, etc."
+                                        value={formData.title}
+                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex space-x-3 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(1)}
+                                        className="btn btn-secondary flex-1"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="btn btn-primary flex-1"
+                                    >
+                                        {isLoading ? 'Processing...' : 'Submit Application'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </form>
 
                     <p className="text-center text-sm text-text-secondary mt-6">
                         Already an instructor? <Link to="/login?role=teacher" className="text-primary hover:text-white transition-colors">Sign In</Link>

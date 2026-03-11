@@ -11,7 +11,7 @@ const blankAuthForm = {
 };
 
 const Auth = ({ initialMode = 'login' }) => {
-    const { studentLogin, instructorLogin, register, verifyEmailCode } = useAuth();
+    const { studentLogin, instructorLogin, register } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -25,11 +25,6 @@ const Auth = ({ initialMode = 'login' }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const [pendingEmail, setPendingEmail] = useState('');
-    const [isAwaitingOtp, setIsAwaitingOtp] = useState(false);
-    const [otpCode, setOtpCode] = useState('');
-    const [otpError, setOtpError] = useState('');
-    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
     const [formData, setFormData] = useState(blankAuthForm);
     const [avatarPreview, setAvatarPreview] = useState('');
     const [avatarDataUrl, setAvatarDataUrl] = useState('');
@@ -87,10 +82,6 @@ const Auth = ({ initialMode = 'login' }) => {
         setMode(initialMode);
         setError('');
         setSuccessMessage('');
-        setPendingEmail('');
-        setIsAwaitingOtp(false);
-        setOtpCode('');
-        setOtpError('');
         resetForm();
     }, [initialMode, resetForm]);
 
@@ -105,26 +96,22 @@ const Auth = ({ initialMode = 'login' }) => {
     }, [defaultRole]);
 
     useEffect(() => {
-        if (mode === 'register' && role === 'teacher' && !isAwaitingOtp) {
+        if (mode === 'register' && role === 'teacher') {
             redirectToTeacherApplication();
         } else if (hasRedirectedToTeacherFlow.current && (role !== 'teacher' || mode !== 'register')) {
             hasRedirectedToTeacherFlow.current = false;
         }
-    }, [mode, role, isAwaitingOtp, redirectToTeacherApplication]);
+    }, [mode, role, redirectToTeacherApplication]);
 
     useEffect(() => {
-        if (!location.state?.fromTeacherVerification) return;
+        if (!location.state?.fromTeacherRegistration) return;
 
         const verifiedEmail = location.state?.email || '';
         setMode('login');
         setRole('teacher');
         setError('');
-        setSuccessMessage('Your instructor profile is verified. Sign in to access your dashboard.');
-        setIsAwaitingOtp(false);
-        setPendingEmail('');
-        setOtpCode('');
-        setOtpError('');
-        setFormData((prev) => ({ ...prev, email: verifiedEmail }));
+        setSuccessMessage('Instructor profile created successfully. Sign in to continue.');
+        setFormData({ ...blankAuthForm, email: verifiedEmail });
         setShowPassword(false);
 
         navigate(`${location.pathname}${location.search}`, {
@@ -156,21 +143,21 @@ const Auth = ({ initialMode = 'login' }) => {
                     throw new Error("Passwords do not match");
                 }
                 const avatarImage = avatarDataUrl || null;
+                const emailForLogin = formData.email;
 
-                const emailForOtp = formData.email;
                 const response = await register({
                     name: formData.name,
-                    email: emailForOtp,
+                    email: emailForLogin,
                     password: formData.password,
                     role,
                     avatarImage
                 });
-                setSuccessMessage(response?.message || 'We sent a verification code to your email. Enter it below to finish signing up.');
-                setPendingEmail(emailForOtp);
-                setIsAwaitingOtp(true);
-                setOtpCode('');
-                setOtpError('');
-                resetForm();
+
+                setSuccessMessage(response?.message || 'Account created successfully. Sign in to continue.');
+                setMode('login');
+                setRole('student');
+                setFormData({ ...blankAuthForm, email: emailForLogin });
+                resetAvatarSelection();
                 setShowPassword(false);
             }
         } catch (err) {
@@ -186,33 +173,6 @@ const Auth = ({ initialMode = 'login' }) => {
             }
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        if (!pendingEmail) return;
-        setOtpError('');
-        setError('');
-        setSuccessMessage('');
-        setIsVerifyingOtp(true);
-
-        try {
-            const response = await verifyEmailCode(pendingEmail, otpCode.trim());
-            setSuccessMessage(response?.message || 'Email verified successfully. You can now log in.');
-            setIsAwaitingOtp(false);
-            const emailToUse = pendingEmail;
-            setPendingEmail('');
-            setOtpCode('');
-            setMode('login');
-            setShowPassword(false);
-            setFormData({ ...blankAuthForm, email: emailToUse });
-        } catch (err) {
-            const status = err?.response?.status;
-            const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-            setOtpError(status ? `${status}: ${serverMsg || err.message}` : err.message || 'Verification failed.');
-        } finally {
-            setIsVerifyingOtp(false);
         }
     };
 
@@ -243,48 +203,7 @@ const Auth = ({ initialMode = 'login' }) => {
 
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
                 <div className="max-w-md w-full animate-slide-up bg-white border border-orange-100 rounded-3xl p-8 shadow-sm">
-                    {isAwaitingOtp ? (
-                        <>
-                            <div className="text-center mb-8">
-                                <h2 className="text-3xl font-bold text-gray-900 mb-2">Verify your email</h2>
-                                <p className="text-gray-600">
-                                    Enter the 6-digit code we sent to <span className="text-gray-900 font-semibold">{pendingEmail}</span> to finish creating your account.
-                                </p>
-                            </div>
-                            <div className="p-6 rounded-2xl bg-orange-50/60 border border-orange-100">
-                                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-600 mb-2">Verification Code</label>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            maxLength={6}
-                                            value={otpCode}
-                                            onChange={(e) => setOtpCode(e.target.value)}
-                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 tracking-widest text-center text-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-                                            placeholder="123456"
-                                            required
-                                        />
-                                    </div>
-                                    {otpError && (
-                                        <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm text-center">
-                                            {otpError}
-                                        </div>
-                                    )}
-                                    <button
-                                        type="submit"
-                                        disabled={isVerifyingOtp || otpCode.trim().length < 6}
-                                        className="bg-orange-400 text-white font-semibold text-sm py-3 px-6 rounded w-full flex items-center justify-center gap-2 hover:opacity-90 transition-colors"
-                                    >
-                                        {isVerifyingOtp ? 'Verifying...' : 'Verify Email'}
-                                        {!isVerifyingOtp && <ArrowRight className="w-4 h-4" />}
-                                    </button>
-                                </form>
-                            </div>
-                        </>
-                    ) : (
-                        <>
+                    <>
                             <div className="text-center lg:text-left mb-8">
                                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
                                     {mode === 'login' ? 'Welcome Back!' : 'Create Account'}
@@ -316,10 +235,7 @@ const Auth = ({ initialMode = 'login' }) => {
                                 {successMessage && (
                                     <div className="p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm flex items-start gap-2">
                                         <CheckCircle className="w-5 h-5 mt-0.5" />
-                                        <div>
-                                            <p className="font-medium">{successMessage}</p>
-                                            <p className="text-xs text-gray-600 mt-1">After verifying, sign in to access your dashboard.</p>
-                                        </div>
+                                        <p className="font-medium">{successMessage}</p>
                                     </div>
                                 )}
 
@@ -488,8 +404,7 @@ const Auth = ({ initialMode = 'login' }) => {
                                     </button>
                                 </div>
                             </div>
-                        </>
-                    )}
+                    </>
                 </div>
             </div>
         </div>
