@@ -8,6 +8,8 @@ import { api } from '../utils/api';
 const AICourseRecommendation = lazy(() => import('../components/AICourseRecommendation'));
 const PaymentModal = lazy(() => import('../components/PaymentModal'));
 
+const fallbackCourses = [];
+
 
 const Home = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -27,9 +29,8 @@ const Home = () => {
             setCoursesLoading(true);
             setCoursesError(null);
             try {
-                const res = await fetch('/courses');
-                if (!res.ok) throw new Error(`Failed to load courses (${res.status})`);
-                const data = await res.json();
+                const res = await api.get('/courses');
+                const data = res?.data;
                 if (!cancelled) setCourses(Array.isArray(data) ? data : []);
             } catch (e) {
                 if (!cancelled) {
