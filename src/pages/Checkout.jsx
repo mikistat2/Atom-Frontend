@@ -317,11 +317,11 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center items-start p-4 sm:p-6">
-      <div className="w-full max-w-7xl flex flex-col lg:flex-row items-start gap-8">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row items-start gap-6 lg:gap-10">
         <div className="w-full lg:w-5/12 space-y-6">
           {course && (
             <>
-              <div className="grid gap-4 rounded-2xl border border-indigo-100 bg-white/80 p-4 shadow-inner sm:grid-cols-[120px,1fr]">
+              <div className="grid grid-cols-1 items-start gap-4 rounded-2xl border border-indigo-100 bg-white/80 p-4 shadow-inner sm:grid-cols-[120px,1fr]">
             <div className="overflow-hidden rounded-xl bg-gray-100">
               <img
                 src={courseImage}
@@ -385,7 +385,7 @@ const Checkout = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Complete Your Payment</h1>
+          <h1 className="text-3xl font-bold text-gray-800 lg:text-xl">Complete Your Payment</h1>
         </div>
 
         {courseLoading && (
@@ -428,7 +428,7 @@ const Checkout = () => {
               { icon: "5️⃣", text: "Upload screenshot below and verify" },
               { icon: "6️⃣", text: "Wait for verification (3-5 seconds)" },
             ].map((item, index) => (
-              <div key={index} className="flex items-start space-x-3 text-gray-700">
+              <div key={index} className="flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-3 text-gray-700">
                 <span className="text-lg">{item.icon}</span>
                 <span className="flex-1 text-base">
                   {item.text}
@@ -479,7 +479,7 @@ const Checkout = () => {
             {/* Amount Field */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">Amount (ETB)</label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="relative flex-1">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">ETB</span>
                   <input
@@ -491,7 +491,7 @@ const Checkout = () => {
                 </div>
                 <button
                   onClick={() => copyText(String(coursePriceValue), "amount")}
-                  className="p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group"
+                  className="w-full sm:w-auto p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group flex items-center justify-center"
                 >
                   {copiedField === "amount" ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
@@ -509,7 +509,7 @@ const Checkout = () => {
             {/* Description Field */}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">Reference</label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <input
                   type="text"
                   value={referenceNumber}
@@ -518,7 +518,7 @@ const Checkout = () => {
                 />
                 <button
                   onClick={() => copyText(referenceNumber, "description")}
-                  className="p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group"
+                  className="w-full sm:w-auto p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group flex items-center justify-center"
                 >
                   {copiedField === "description" ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
@@ -538,7 +538,7 @@ const Checkout = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">Account number</label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <input
                   type="text"
                   value={displayAccountNumber}
@@ -547,7 +547,7 @@ const Checkout = () => {
                 />
                 <button
                   onClick={() => copyText(displayAccountNumber, "accountNumber")}
-                  className="p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group"
+                  className="w-full sm:w-auto p-3 border-2 border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition group flex items-center justify-center"
                 >
                   {copiedField === "accountNumber" ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
@@ -569,7 +569,7 @@ const Checkout = () => {
           <label className="block mb-2 font-medium text-gray-700">
             Upload Payment Screenshot
           </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 transition cursor-pointer"
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-6 text-center hover:border-indigo-400 transition cursor-pointer"
                onClick={() => fileInputRef.current?.click()}>
             <input
               type="file"
@@ -597,7 +597,7 @@ const Checkout = () => {
               <img
                 src={preview}
                 alt="preview"
-                className="rounded-xl border-2 border-indigo-200 max-h-64 mx-auto"
+                className="rounded-xl border-2 border-indigo-200 max-h-64 w-full max-w-md object-contain mx-auto"
               />
               <button 
                 onClick={() => {
