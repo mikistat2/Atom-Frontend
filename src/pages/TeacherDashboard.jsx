@@ -46,7 +46,7 @@ const TeacherDashboard = () => {
         <div className="min-h-screen bg-linear-to-b from-white via-orange-50/40 to-white text-gray-900">
 
 
-            <main className="container-custom py-24 min-h-screen">
+            <main className=" py-0 sm:py-12 lg:py-24 min-h-screen">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 p-6 rounded-2xl border border-orange-100 bg-white shadow-sm">
                     <div>

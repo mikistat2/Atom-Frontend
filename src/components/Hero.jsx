@@ -111,23 +111,23 @@ const Hero = ({ searchValue, onSearchChange, onSearchSubmit }) => {
                     </motion.div>
 
                     {/* Search Bar */}
-                    <motion.div variants={itemVariants} className="max-w-2xl mx-auto w-full">
+                    <motion.div variants={itemVariants} className="max-w-3xl mx-auto w-full">
                         <form
                             onSubmit={handleSubmit}
-                            className="bg-white rounded-2xl p-2 flex items-center space-x-3 transform transition-all hover:scale-[1.01] hover:shadow-lg border border-orange-100"
+                            className="bg-white rounded-2xl p-1.5 sm:p-2 flex items-center space-x-2 sm:space-x-3 transform transition-all hover:scale-[1.01] hover:shadow-lg border border-orange-100"
                         >
-                            <Search className="w-6 h-6 text-gray-600 ml-3 sm:w-5 sm:h-5" />
+                            <Search className="w-5 h-5 text-gray-600 ml-2 sm:w-6 sm:h-6 sm:ml-3" />
                             <input
                                 id="hero-search"
                                 type="text"
                                 placeholder="What do you want to learn today?"
-                                className="flex-1 bg-gray-50 border border-gray-200 rounded px-4 py-2.5 text-gray-900 placeholder:text-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                                className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded px-3 py-2 sm:px-4 sm:py-2.5 text-gray-900 placeholder:text-gray-600 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
                                 value={value}
                                 onChange={(e) => setValue(e.target.value)} // the onchange function is called in the input fild and the on click is handled in the button.
                             />
-                            <button type="submit" className="bg-orange-400 text-white font-semibold text-sm py-2 px-6 rounded hover:opacity-90 transition-colors flex items-center space-x-2">
+                            <button type="submit" className="bg-orange-400 text-white font-semibold text-xs sm:text-sm py-2 px-3 sm:px-5 rounded hover:opacity-90 transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap flex-shrink-0">
                                 <span>Search</span>
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                         </form>
                     </motion.div>

@@ -375,7 +375,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                 )}
 
                 {sections.map((section, index) => (
-                    <div key={index} className="card bg-surface/50 border-white/10">
+                    <div key={index} className="card bg-surface/50 border-white/10 p-4 sm:p-0">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-white text-lg flex items-center gap-2">
                                 <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center">
@@ -439,7 +439,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                 You have added {sections.length} sections with {sections.reduce((acc, s) => acc + s.lessons.length, 0)} lessons.
             </p>
 
-            <div className="card max-w-md mx-auto bg-surface/50 text-left">
+            <div className="card max-w-md mx-auto bg-surface/50 text-left p-4 sm:p-6">
                 <div className="flex items-start gap-4">
                     <img
                         src={courseData.thumbnail || 'https://via.placeholder.com/150'}
