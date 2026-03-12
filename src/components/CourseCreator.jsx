@@ -185,7 +185,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">Category</label>
                         <select
@@ -225,7 +225,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">Level</label>
                         <select
@@ -287,7 +287,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
     const renderListBuilder = (title, type, placeholder) => (
         <div className="space-y-3">
             <label className="block text-sm font-medium text-text-secondary">{title}</label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                     type="text"
                     value={newItem[type]}
@@ -348,7 +348,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
             <h2 className="text-2xl font-bold text-white mb-6">Course Curriculum</h2>
 
             {/* Add Section */}
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                     type="text"
                     value={newSectionTitle}
@@ -457,9 +457,9 @@ const CourseCreator = ({ onCancel, onSave }) => {
     );
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full max-w-6xl mx-auto px-2">
             {/* Progress Steps */}
-            <div className="flex items-center justify-between mb-8 px-12">
+            <div className="flex flex-wrap items-center justify-center md:justify-between gap-6 mb-8 px-0 md:px-2">
                 {[
                     { num: 1, label: 'Basic Info' },
                     { num: 2, label: 'Details' },
@@ -476,7 +476,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                         </span>
                         {/* Connector Line */}
                         {idx < 3 && (
-                            <div className={`absolute top-5 left-1/2 w-full h-1 -z-10 ${step > s.num ? 'bg-primary' : 'bg-surface-light'
+                            <div className={`hidden md:block absolute top-5 left-1/2 w-full h-1 -z-10 ${step > s.num ? 'bg-primary' : 'bg-surface-light'
                                 }`} style={{ width: 'calc(100% + 4.5rem)', left: '50%' }}></div>
                         )}
                     </div>
@@ -484,7 +484,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
             </div>
 
             {/* Content */}
-            <div className="bg-surface/30 backdrop-blur-sm border border-white/10 rounded-2xl p-8 mb-8 min-h-[500px]">
+            <div className="bg-surface/30 backdrop-blur-sm border border-white/10 rounded-2xl p-3 sm:p-5 md:p-6 mb-8 min-h-[500px]">
                 {step === 1 && renderStep1()}
                 {step === 2 && renderStep2()}
                 {step === 3 && renderStep3()}
@@ -492,19 +492,19 @@ const CourseCreator = ({ onCancel, onSave }) => {
             </div>
 
             {/* Footer Actions */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <button
                     onClick={onCancel}
-                    className="px-6 py-2 rounded-xl text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                    className="w-full sm:w-auto px-6 py-2 rounded-xl text-text-secondary hover:text-white hover:bg-white/5 transition-colors text-center"
                 >
                     Cancel
                 </button>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     {step > 1 && (
                         <button
                             onClick={() => setStep(step - 1)}
-                            className="px-6 py-2 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors"
+                            className="w-full sm:w-auto px-6 py-2 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors"
                         >
                             Back
                         </button>
@@ -514,7 +514,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                         <button
                             onClick={() => setStep(step + 1)}
                             disabled={step === 1 && !courseData.title}
-                            className="btn btn-primary px-8 py-2 rounded-xl flex items-center gap-2"
+                            className="w-full sm:w-auto btn btn-primary px-8 py-2 rounded-xl flex items-center justify-center gap-2"
                         >
                             Next Step <ChevronRight className="w-4 h-4" />
                         </button>
@@ -522,7 +522,7 @@ const CourseCreator = ({ onCancel, onSave }) => {
                         <button
                             onClick={handlePublish}
                             disabled={loading}
-                            className="btn btn-primary px-8 py-2 rounded-xl flex items-center gap-2"
+                            className="w-full sm:w-auto btn btn-primary px-8 py-2 rounded-xl flex items-center justify-center gap-2"
                         >
                             {loading ? 'Publishing...' : 'Publish Course'}
                             {!loading && <Upload className="w-4 h-4" />}
